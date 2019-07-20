@@ -9,7 +9,7 @@ export default class App extends Component {
     included_item: '',
     edited_list_value: '',
     index_to_edit:'',
-    value:'bread',
+    value:'',
     shopping:'shopping',
     item_list: [],
     show_add: false,
@@ -21,14 +21,14 @@ export default class App extends Component {
     this.getShoppingList()
   }
 
-  getShoppingList = async () => {
+  getShoppingList = () => {
     this.setState({ loading: true })
     
-    let shopping_list = await _retrieveData('shopping_list');
+    let shopping_list =  _retrieveData('shopping_list');
     if (shopping_list) {
       shopping_list = JSON.parse(shopping_list)
     }
-    this.setState({ loading: false, item_list: shopping_list  })
+    this.setState({ loading: false, item_list: shopping_list || [] })
 
   }
   removeItem = (index) => {
@@ -36,39 +36,26 @@ export default class App extends Component {
     this.setState(this.state)
 
     _removeData('shopping_list')
-      .then(() => {
-        console.log('Data removed from localStorage')
-        _storeData('shopping_list', JSON.stringify(this.state.item_list))
-      })
-      .then(() => {
-        this.getShoppingList()
-    })
+    _storeData('shopping_list', JSON.stringify(this.state.item_list))
+    this.getShoppingList()
+  
   }
   addingToTheList = () => {
-    let new_list = [this.state.included_item, ...this.state.item_list];
+    var new_list = [this.state.included_item, ...this.state.item_list];
     this.setState({item_list:new_list})
     _removeData('shopping_list')
-      .then(() => {
-        _storeData('shopping_list', JSON.stringify(this.state.item_list))
-        
-      })
-      .then(() => {
-        this.getShoppingList()
-    })
+    _storeData('shopping_list', JSON.stringify(new_list))
+    this.getShoppingList()
   }
   editItem = () =>  {
     this.state.item_list[this.state.index_to_edit] = this.state.edited_list_value
     this.setState(this.state)
     _removeData('shopping_list')
-    .then(() => {
-      localStorage["shopping_list"] = JSON.stringify(this.state.item_list);
-    })
-    .then(() => {
-      this.getShoppingList()
-    })
+    localStorage["shopping_list"] = JSON.stringify(this.state.item_list);
+    this.getShoppingList()
   }
   includedItem = (e) => {
-    this.setState({included_item: e.target.value})
+    this.setState({ included_item: e.target.value })
   }
   editedListValue = (e) => {
     this.setState({ edited_list_value: e.target.value })
@@ -77,8 +64,6 @@ export default class App extends Component {
     this.setState({show_add:false, show_edit: false})
   }
   render() {
-
-
   const deleteItem =  <div>
       <p>Delete item</p>
       <button onClick={() => this.setState({ show_delete: false })} type="button">Close</button>
